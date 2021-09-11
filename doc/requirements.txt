@@ -1,0 +1,6 @@
+sphinx
+docutils
+sphinx-autobuild
+sphinx_rtd_theme
+sphinx-typlog-theme
+extorch == 1.0.2

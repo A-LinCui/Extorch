@@ -46,3 +46,23 @@ def use_params(module: nn.Module, params: OrderedDict) -> None:
     yield
     for mod_prefix, mod in module.named_modules():
         _substitute_params(mod, backup_params, prefix = mod_prefix)
+
+
+class WrapperModel(nn.Module):
+    r"""
+    A wrapper model for computer vision tasks.
+    Normalize the input before feed-forward.
+
+    Args:
+        module (nn.Module): A network with input range [0., 1.].
+        mean (Tensor): The mean value used for input transforms.
+        std (Tensor): The standard value used for input transforms.
+    """
+    def __init__(self, module: nn.Module, mean: Tensor, std: Tensor) -> None:
+        super(WrapperModel, self).__init__()
+        self.module = module
+        self.mean = mean
+        self.std = std
+
+    def forward(self, input: Tensor) -> Tensor:
+        return self.module((input - self.mean) / self.std)

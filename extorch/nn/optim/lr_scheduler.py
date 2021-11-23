@@ -10,7 +10,7 @@ class CosineWithRestarts(_LRScheduler):
     Cosine annealing with restarts (`Link`_).
     
     Args:
-        optimizer (Optimizer):
+        optimizer (Optimizer): The optimizer.
         t_max (int): The maximum number of iterations within the first cycle.
         eta_min (float): The minimum learning rate. Default: 0.
         last_epoch (int): The index of the last epoch. This is used when restarting. Default: -1.

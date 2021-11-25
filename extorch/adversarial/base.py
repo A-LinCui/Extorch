@@ -13,7 +13,7 @@ class BaseAdversary(nn.Module):
     """
     def __init__(self, use_eval_mode: bool = False) -> None:
         super(BaseAdversary, self).__init__()
-        self.use_eval_mode
+        self.use_eval_mode = use_eval_mode
 
     def forward(self, net: nn.Module, input: Tensor, target: Tensor, output: Tensor = None) -> Tensor:
         r"""
@@ -28,7 +28,7 @@ class BaseAdversary(nn.Module):
         Returns:
             adv_examples (Tensor): The generated adversarial examples.
         """
-        if self.use_eval_model:
+        if self.use_eval_mode:
             is_training_stored = net.training
             net.eval()
         else:

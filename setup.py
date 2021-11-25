@@ -6,7 +6,7 @@ PATH = os.path.dirname(__file__)
 with open(os.path.join(PATH, "README.md"), "r") as rf:
     README = rf.read()
 
-version = "1.0.2"
+version = "1.0.3"
 
 install_requires = [
     "pyyaml",

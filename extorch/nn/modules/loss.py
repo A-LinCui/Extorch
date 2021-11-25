@@ -2,9 +2,8 @@ import torch
 import torch.nn as nn
 from torch import Tensor
 
-import extorch.utils as utils
 from extorch.utils import expect, InvalidValueException
-from extorch.nn.functional import dec_soft_assignment
+from extorch.nn.functional import dec_soft_assignment, mix_data
 
 
 class CrossEntropyLabelSmooth(nn.Module):
@@ -42,7 +41,7 @@ class CrossEntropyMixupLoss(nn.Module):
         self._criterion = nn.CrossEntropyLoss(**kwargs)
 
     def forward(self, input: Tensor, target: Tensor) -> Tensor:
-        mixed_input, mixed_target, _lambda = utils.mix_data(input, target, self.alpha)
+        mixed_input, mixed_target, _lambda = mix_data(input, target, self.alpha)
         loss = _lambda * self._criterion(input, target) + \
                 (1 - _lambda) * self._criterion(mixed_input, mixed_target)
         return loss

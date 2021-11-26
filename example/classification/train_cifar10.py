@@ -1,5 +1,5 @@
 """
-An example file for adversarially training a ResNet-18 model on CIFAR-10.
+An example file for training a ResNet-18 model on CIFAR-10.
 """
 
 import argparse
@@ -23,30 +23,22 @@ def train_epoch(net, trainloader, device, optimizer, criterion, epoch, report_ev
     top5 = utils.AverageMeter()
     
     net.train()
-
     for step, (inputs, labels) in enumerate(trainloader):
         inputs = inputs.to(device)
         labels = labels.to(device)
-            
         optimizer.zero_grad()
-
         logits = net(inputs)
         loss = criterion(logits, labels)
         loss.backward()
-
         if grad_clip is not None:
             nn.utils.clip_grad_norm_(net.parameters(), grad_clip)
         optimizer.step()
-
         prec1, prec5 = utils.accuracy(logits, labels, topk = (1, 5))
-            
         n = inputs.size(0)
         objs.update(loss.item(), n)
         top1.update(prec1.item(), n)
         top5.update(prec5.item(), n)
-
         del loss
-
         if (step + 1) % report_every == 0:
             logger.info("Epoch {} train {} / {} {:.3f}; {:.3f}%; {:.3f}%".format(
                 epoch, step + 1, len(trainloader), objs.avg, top1.avg, top5.avg))
@@ -64,19 +56,14 @@ def valid(net, testloader, device, optimizer, criterion, epoch, report_every, lo
         for step, (inputs, labels) in enumerate(testloader):
             inputs = inputs.to(device)
             labels = labels.to(device)
-            
             logits = net(inputs)
             loss = criterion(logits, labels)
-                
             prec1, prec5 = utils.accuracy(logits, labels, topk = (1, 5))
-        
             n = inputs.size(0)
             objs.update(loss.item(), n)
             top1.update(prec1.item(), n)
             top5.update(prec5.item(), n)
-            
             del loss
-
             if (step + 1) % report_every == 0:
                 logger.info("Epoch {} valid {} / {} {:.3f}; {:.3f}%; {:.3f}%".format(
                     epoch, step + 1, len(testloader), objs.avg, top1.avg, top5.avg))

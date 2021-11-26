@@ -28,38 +28,28 @@ def train_epoch(net, trainloader, device, optimizer, criterion, adversary, epoch
     adv_top5 = utils.AverageMeter()
     
     net.train()
-
     for step, (inputs, labels) in enumerate(trainloader):
         inputs = inputs.to(device)
         labels = labels.to(device)
-            
         optimizer.zero_grad()
-
         with torch.no_grad():
             logits = net(inputs)
-            
         adv_inputs = adversary(net, inputs, labels, logits)
         adv_logits = net(adv_inputs)
-
         loss = criterion(adv_logits, labels)
         loss.backward()
-
         if grad_clip is not None:
             nn.utils.clip_grad_norm_(net.parameters(), grad_clip)
         optimizer.step()
-
         prec1, prec5 = utils.accuracy(logits, labels, topk = (1, 5))
         adv_prec1, adv_prec5 = utils.accuracy(adv_logits, labels, topk = (1, 5))
-            
         n = inputs.size(0)
         objs.update(loss.item(), n)
         top1.update(prec1.item(), n)
         top5.update(prec5.item(), n)
         adv_top1.update(adv_prec1.item(), n)
         adv_top5.update(adv_prec5.item(), n)
-
         del loss
-
         if (step + 1) % report_every == 0:
             logger.info("Epoch {} train {} / {} {:.3f}; {:.3f}%; {:.3f}%; {:.3f}%; {:.3f}%".format(
                 epoch, step + 1, len(trainloader), objs.avg, top1.avg, top5.avg, 
@@ -79,27 +69,20 @@ def valid(net, testloader, device, optimizer, criterion, adversary, epoch, repor
     for step, (inputs, labels) in enumerate(testloader):
         inputs = inputs.to(device)
         labels = labels.to(device)
-            
         with torch.no_grad():
             logits = net(inputs)
-            
         adv_inputs = adversary(net, inputs, labels, logits)
         adv_logits = net(adv_inputs)
-
         loss = criterion(adv_logits, labels)
-                
         prec1, prec5 = utils.accuracy(logits, labels, topk = (1, 5))
         adv_prec1, adv_prec5 = utils.accuracy(adv_logits, labels, topk = (1, 5))
-        
         n = inputs.size(0)
         objs.update(loss.item(), n)
         top1.update(prec1.item(), n)
         top5.update(prec5.item(), n)
         adv_top1.update(adv_prec1.item(), n)
         adv_top5.update(adv_prec5.item(), n)
-
         del loss
-
         if (step + 1) % report_every == 0:
             logger.info("Epoch {} valid {} / {} {:.3f}; {:.3f}%; {:.3f}%; {:.3f}%; {:.3f}".format(
                 epoch, step + 1, len(testloader), objs.avg, top1.avg, top5.avg, 

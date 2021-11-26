@@ -164,6 +164,8 @@ def main():
     time_estimator = utils.TimeEstimator(args.epochs)
 
     for epoch in range(1, args.epochs + 1):
+        LOGGER.info("Epoch {} lr {:.5f}".format(epoch, optimizer.param_groups[0]["lr"]))
+
         loss, acc, acc_adv = train_epoch(net, trainloader, DEVICE, optimizer, criterion, 
                 adversary, epoch, args.report_every, LOGGER, args.grad_clip) 
         LOGGER.info("Train epoch {} / {}: obj {:.3f}; acc {:.3f}%; adv_acc {:.3f}%".format(
@@ -180,6 +182,8 @@ def main():
             LOGGER.info("Save checkpoint at {}".format(save_path))
         
         LOGGER.info("Iter {} / {} Remaining time: {} / {}".format(epoch, args.epochs, *time_estimator.step()))
+
+        scheduler.step()
 
     if args.train_dir:
         save_path = os.path.join(args.train_dir, "final.ckpt")

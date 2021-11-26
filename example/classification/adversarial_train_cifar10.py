@@ -16,7 +16,7 @@ import extorch.utils as utils
 import extorch.nn as extnn
 from extorch.adversarial import PGDAdversary
 
-from module import ResNet18
+from module import CIFARResNet18
 
 
 def train_epoch(net, trainloader, device, optimizer, criterion, adversary, epoch, 
@@ -155,7 +155,7 @@ def main():
             batch_size = args.batch_size, num_workers = args.num_workers, shuffle = False)
 
     # Construct the network
-    net = ResNet18(num_classes = datasets.num_classes).to(DEVICE)
+    net = CIFARResNet18(num_classes = datasets.num_classes).to(DEVICE)
     num_params = utils.get_params(net)
     LOGGER.info("Parameter size: {:.5f}M".format(num_params / 1.e6))
  

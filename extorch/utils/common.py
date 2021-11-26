@@ -218,7 +218,6 @@ class TimeEstimator(object):
         Returns:
             overall_time (datetime): The remaining time estimated based on the whole history.
             nearest_time (datetime): The remaining time estimated based on the last iteration.
-
         """
         assert self.current_iter <= self.iter_num, "The maximum number of iterations is exceeded."
         self.current_iter += 1

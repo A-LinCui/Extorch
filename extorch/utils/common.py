@@ -4,10 +4,10 @@ import yaml
 import random
 import shutil
 import subprocess
-from typing import List
+from typing import List, Tuple
 from contextlib import contextmanager
 from time import time
-from functools import wraps
+from datetime import datetime
 
 import ipdb
 import numpy as np
@@ -141,7 +141,7 @@ class abstractclassmethod(classmethod):
         super(abstractclassmethod, self).__init__(a_callable)
 
 
-def run_subprocesses(commands: List[str], **kwargs) -> List[str]:
+def run_processes(commands: List[str], **kwargs) -> List[str]:
     r"""
     Run a list of commands one-by-one.
 
@@ -158,7 +158,7 @@ def run_subprocesses(commands: List[str], **kwargs) -> List[str]:
         >>> # And assumes no file named `not_exist.py` exists
         >>> # Now, we want to run `test.py` and `not_exist.py` one-by-one
         >>> commands = ["python test.py", "python not_exist.py"]
-        >>> unsuccessful_commands = run_subprocesses(commands) # ["python not_exist.py"]
+        >>> unsuccessful_commands = run_processes(commands) # ["python not_exist.py"]
         >>> print("Unsuccessful commands: {}".format(unsuccessful_commands))
     """
     unsuccessful_commands = []
@@ -195,3 +195,35 @@ def makedir(path: str, remove: bool = False, quiet: bool = False) -> None:
     
     if not os.path.isdir(path):
         os.makedirs(path)
+
+
+class TimeEstimator(object):
+    r"""
+    Remaining time estimator.
+    Estimate the remaining time to finish all iterations based on history.
+
+    Args:
+        iter_num (int): Total iteration number.
+    """
+    def __init__(self, iter_num: int) -> None:
+        self.iter_num = iter_num
+        self.start_time = datetime.now()
+        self.last_time = datetime.now()
+        self.current_iter = 0
+
+    def step(self) -> Tuple[datetime, datetime]:
+        r"""
+        Update the estimator and return the estimated remaining time.
+
+        Returns:
+            overall_time (datetime): The remaining time estimated based on the whole history.
+            nearest_time (datetime): The remaining time estimated based on the last iteration.
+
+        """
+        assert self.current_iter <= self.iter_num, "The maximum number of iterations is exceeded."
+        self.current_iter += 1
+        current_time = datetime.now()
+        overall_time = (current_time - self.start_time) / self.current_iter * (self.iter_num - self.current_iter)
+        nearest_time = (current_time - self.last_time) * (self.iter_num - self.current_iter)
+        self.last_time = current_time
+        return overall_time, nearest_time

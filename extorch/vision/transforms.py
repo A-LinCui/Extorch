@@ -1,5 +1,10 @@
+from typing import Optional, Dict, Tuple
+
+import torch
 import torch.nn as nn
 from torch import Tensor
+from torchvision.transforms import functional as F
+from torchvision.transforms import transforms
 
 from . import functional as extF
 
@@ -36,3 +41,21 @@ class Cutout(nn.Module):
             img (Tensor): Image with n_holes of dimension length x length cut out of it.
         """
         return extF.cutout(img, self.length, self.n_holes)
+
+
+class DetectionCompose(transforms.Compose):
+    r"""
+    Tranform compose for detection.
+    """
+    def __call__(self, image, target):
+        for t in self.transforms:
+            image, target = t(image, target)
+        return image, target
+
+
+class DetectionToTensor(nn.Module):
+    def forward(self, image: Tensor, target: Optional[Dict[str, Tensor]] = None
+            ) -> Tuple[Tensor, Optional[Dict[str, Tensor]]]:
+        image = F.pil_to_tensor(image)
+        image = F.convert_image_dtype(image)
+        return image, target

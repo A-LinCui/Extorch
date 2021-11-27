@@ -11,6 +11,34 @@ from torchvision.transforms import functional as F
 
 from extorch.vision.dataset import CVDataset
 from extorch.vision.transforms import *
+from extorch.vision import get_image_size
+
+
+def _flip_coco_person_keypoints(kps, width):
+    flip_inds = [0, 2, 1, 4, 3, 6, 5, 8, 7, 10, 9, 12, 11, 14, 13, 16, 15]
+    flipped_data = kps[:, flip_inds]
+    flipped_data[..., 0] = width - flipped_data[..., 0]
+    # Maintain COCO convention that if visibility == 0, then x, y = 0
+    inds = flipped_data[..., 2] == 0
+    flipped_data[inds] = 0
+    return flipped_data
+
+
+class DetectionRandomHorizontalFlip(transforms.RandomHorizontalFlip):
+    def forward(self, image: Tensor, target: Optional[Dict[str, Tensor]] = None
+            ) -> Tuple[Tensor, Optional[Dict[str, Tensor]]]:
+        if torch.rand(1) < self.p:
+            image = F.hflip(image)
+            if target is not None:
+                width, _ = get_image_size(image)
+                target["boxes"][:, [0, 2]] = width - target["boxes"][:, [2, 0]]
+                if "masks" in target:
+                    target["masks"] = target["masks"].flip(-1)
+                if "keypoints" in target:
+                    keypoints = target["keypoints"]
+                    keypoints = _flip_coco_person_keypoints(keypoints, width)
+                    target["keypoints"] = keypoints
+        return image, target
 
 
 PennFudan_TRAIN_TRANSFORM = DetectionCompose([
@@ -39,14 +67,19 @@ class PennFudan(CVDataset):
             train_transform: transforms.Compose = PennFudan_TRAIN_TRANSFORM, 
             test_transform: transforms.Compose = PennFudan_TEST_TRANSFORM) -> None:
         super(PennFudan, self).__init__(data_dir, train_transform, test_transform)
-        dataset = PennFudanDataset(data_dir, None)
-        total_num = len(dataset)
+        assert 0 < train_ratio < 1, "train_ratio should be in (0., 1.)"
+        train_dataset = PennFudanDataset(data_dir, train_transform)
+        
+        total_num = len(train_dataset)
         indices = (torch.randperm if random_split else np.arange)(total_num).tolist()
-        train_dataset = Subset(dataset, indices[:int(train_ratio * total_num)])
+        
+        train_dataset = Subset(train_dataset, indices[:int(train_ratio * total_num)])
         train_dataset.transforms = self.transforms["train"]
-        test_dataset = Subset(dataset, indices[int(train_ratio * total_num):])
-        test_dataset.transforms = self.transforms["test"]
         self.datasets["train"] = train_dataset
+
+        test_dataset = PennFudanDataset(data_dir, test_transform)
+        test_dataset = Subset(test_dataset, indices[int(train_ratio * total_num):])
+        test_dataset.transforms = self.transforms["test"]
         self.datasets["test"] = test_dataset
 
 
@@ -90,10 +123,10 @@ class PennFudanDataset(object):
             ymax = np.max(pos[0])
             boxes.append([xmin, ymin, xmax, ymax])
 
-        boxes = torch.as_tensor(boxes, dtype = torch.float32)
+        boxes = torch.tensor(boxes, dtype = torch.float32)
         # there is only one class
         labels = torch.ones((num_objs, ), dtype = torch.int64)
-        masks = torch.as_tensor(masks, dtype = torch.uint8)
+        masks = torch.tensor(masks, dtype = torch.uint8)
 
         image_id = torch.tensor([idx])
         area = (boxes[:, 3] - boxes[:, 1]) * (boxes[:, 2] - boxes[:, 0])
@@ -115,30 +148,3 @@ class PennFudanDataset(object):
 
     def __len__(self) -> int:
         return len(self.imgs)
-
-
-def _flip_coco_person_keypoints(kps, width):
-    flip_inds = [0, 2, 1, 4, 3, 6, 5, 8, 7, 10, 9, 12, 11, 14, 13, 16, 15]
-    flipped_data = kps[:, flip_inds]
-    flipped_data[..., 0] = width - flipped_data[..., 0]
-    # Maintain COCO convention that if visibility == 0, then x, y = 0
-    inds = flipped_data[..., 2] == 0
-    flipped_data[inds] = 0
-    return flipped_data
-
-
-class DetectionRandomHorizontalFlip(transforms.RandomHorizontalFlip):
-    def forward(self, image: Tensor, target: Optional[Dict[str, Tensor]] = None
-            ) -> Tuple[Tensor, Optional[Dict[str, Tensor]]]:
-        if torch.rand(1) < self.p:
-            image = F.hflip(image)
-            if target is not None:
-                width, _ = F.get_image_size(image)
-                target["boxes"][:, [0, 2]] = width - target["boxes"][:, [2, 0]]
-                if "masks" in target:
-                    target["masks"] = target["masks"].flip(-1)
-                if "keypoints" in target:
-                    keypoints = target["keypoints"]
-                    keypoints = _flip_coco_person_keypoints(keypoints, width)
-                    target["keypoints"] = keypoints
-        return image, target

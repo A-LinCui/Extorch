@@ -1,3 +1,5 @@
+from typing import List
+
 import numpy as np
 import torch
 from torch import Tensor
@@ -38,3 +40,9 @@ def cutout(image: Tensor, length: int, n_holes: int = 1) -> Tensor:
     image *= mask
     
     return image
+
+
+def get_image_size(img: Tensor) -> List[int]:
+    # Returns (w, h) of tensor image
+    assert isinstance(img, Tensor), "img should be a Tensor."
+    return [img.shape[-1], img.shape[-2]]

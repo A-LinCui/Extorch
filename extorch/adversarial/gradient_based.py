@@ -180,6 +180,7 @@ class MDIFGSMAdversary(PGDAdversary):
         step_size = step_size or epsilon / n_step
         super(MDIFGSMAdversary, self).__init__(
                 epsilon, n_step, step_size, rand_init, mean, std, criterion, use_eval_mode)
+        self.momentum = momentum
         self.diversity_layer = DiversityLayer(target_size, diversity_p)
 
     def generate_adv(self, net: nn.Module, input: Tensor, target: Tensor, output: Tensor) -> Tensor:
@@ -205,7 +206,7 @@ class MDIFGSMAdversary(PGDAdversary):
             gradient = input_adv.grad.data
             g = self.momentum * g + gradient / torch.norm(gradient, p = 1)
 
-            eta = self.step_size * g.grad.data.sign()
+            eta = self.step_size * g.data.sign()
             input_adv = Variable(input_adv.data + eta, requires_grad = True)
             
             eta = torch.clamp(

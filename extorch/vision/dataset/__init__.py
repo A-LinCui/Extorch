@@ -1,5 +1,18 @@
+# base datasets
 from .base import BaseDataset, CVDataset, CVClassificationDataset
-from .cifar import CIFAR10, CIFAR100
+
+# computer vision datasets
+
+# classification tasks
+from .mnist import MNIST
+from .fashion_mnist import FashionMNIST
+
+from .cifar10 import CIFAR10
+from .cifar100 import CIFAR100
+
 from .svhn import SVHN
-from .mnist import MNIST, FashionMNIST
+
+from .tiny_imagenet import TinyImageNet
+
+# detection & segmentation
 from .PennFudan import PennFudan

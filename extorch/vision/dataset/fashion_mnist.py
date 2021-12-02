@@ -5,17 +5,18 @@ from torchvision import datasets, transforms
 from extorch.vision.dataset import CVClassificationDataset
 
 
-class MNIST(CVClassificationDataset):
+class FashionMNIST(CVClassificationDataset):
     def __init__(self, data_dir: str, 
                  train_transform: Optional[transforms.Compose] = None, 
                  test_transform: Optional[transforms.Compose] = None,
                  cutout_length: Optional[int] = None,
                  cutout_n_holes: Optional[int] = 1) -> None:
-        super(MNIST, self).__init__(data_dir, train_transform, test_transform, cutout_length, cutout_n_holes)
-
-        self.datasets["train"] = datasets.MNIST(root = self.data_dir, train = True, 
+        super(FashionMNIST, self).__init__(
+            data_dir, train_transform, test_transform, cutout_length, cutout_n_holes)
+        
+        self.datasets["train"] = datasets.FashionMNIST(root = self.data_dir, train = True, 
                 download = True, transform = self.transforms["train"])
-        self.datasets["test"] = datasets.MNIST(root = self.data_dir, train = False, 
+        self.datasets["test"] = datasets.FashionMNIST(root = self.data_dir, train = False, 
                 download = True, transform = self.transforms["test"])
 
     @classmethod

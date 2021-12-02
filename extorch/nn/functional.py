@@ -5,7 +5,7 @@ import torch
 from torch import Tensor
 import torch.nn as nn
 
-from extorch.utils import expect, InvalidValueException
+from extorch.utils import expect
 
 
 def mix_data(self, inputs: Tensor, targets: Tensor, alpha: float = 1.0):
@@ -25,8 +25,6 @@ def mix_data(self, inputs: Tensor, targets: Tensor, alpha: float = 1.0):
     .. _Link:
         https://arxiv.org/abs/1710.09412
     """
-    expect(alpha > 0. and alpha < 1.0, 
-        "alpha () should be in (0., 1.)".format(alpha), InvalidValueException)
     _lambda = np.random.beta(alpha, alpha) if alpha > 0. else 1.
     index = torch.randperm(len(targets)).to(inputs.device)
     mixed_inputs = _lambda * inputs + (1 - _lambda) * inputs[index, :]

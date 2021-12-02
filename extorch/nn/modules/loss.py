@@ -2,7 +2,7 @@ import torch
 import torch.nn as nn
 from torch import Tensor
 
-from extorch.utils import expect, InvalidValueException
+from extorch.utils import expect
 from extorch.nn.functional import dec_soft_assignment, mix_data
 
 
@@ -35,8 +35,6 @@ class CrossEntropyMixupLoss(nn.Module):
 
     def __init__(self, alpha: float, **kwargs) -> None:
         super(CrossEntropyMixupLoss, self).__init__()
-        expect(alpha > 0. and alpha < 1.0, 
-            "alpha () should be in (0., 1.)".format(alpha), InvalidValueException)
         self.alpha = alpha
         self._criterion = nn.CrossEntropyLoss(**kwargs)
 

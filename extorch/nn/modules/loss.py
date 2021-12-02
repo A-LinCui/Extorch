@@ -33,7 +33,7 @@ class CrossEntropyMixupLoss(nn.Module):
         https://pytorch.org/docs/stable/_modules/torch/nn/modules/loss.html#CrossEntropyLoss
     """
 
-    def __init__(self, alpha: float, **kwargs) -> None:
+    def __init__(self, alpha: float = 1., **kwargs) -> None:
         super(CrossEntropyMixupLoss, self).__init__()
         self.alpha = alpha
         self._criterion = nn.CrossEntropyLoss(**kwargs)

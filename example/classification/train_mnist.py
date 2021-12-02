@@ -10,9 +10,11 @@ import torch.nn as nn
 import torch.optim as optim
 from torch.optim.lr_scheduler import CosineAnnealingLR
 import torch.utils.data as data
+from torch.utils.tensorboard import SummaryWriter
 
 import extorch.vision.dataset as dataset
 import extorch.utils as utils
+from extorch.nn import CrossEntropyMixupLoss 
 
 from module import MNISTLeNet
 
@@ -94,6 +96,7 @@ def main():
     if args.train_dir:
         utils.makedir(args.train_dir, remove = True)
         LOGGER.addFile(os.path.join(args.train_dir, "train.log"))
+        writer = SummaryWriter(os.path.join(args.train_dir, "tensorboard"))
 
     DEVICE = torch.device("cuda:{}".format(args.gpu)) \
             if torch.cuda.is_available() else torch.device("cpu")
@@ -114,8 +117,7 @@ def main():
     num_params = utils.get_params(net)
     LOGGER.info("Parameter size: {:.5f}M".format(num_params / 1.e6))
  
-    # Use the CrossEntropyLoss with label smooth in extorch
-    criterion = nn.CrossEntropyLoss()
+    criterion = CrossEntropyMixupLoss(alpha = 1.)
 
     # Construct the optimizer
     optimizer = optim.SGD(list(net.parameters()), lr = args.lr, 
@@ -134,10 +136,20 @@ def main():
         LOGGER.info("Train epoch {} / {}: obj {:.3f}; Acc. Top-1 {:.3f}%; Top-5 {:.3f}%".format(
                 epoch, args.epochs, loss, acc, acc_top5))
 
+        if args.train_dir:
+            writer.add_scalar("Train/Loss", loss, epoch)
+            writer.add_scalar("Train/Acc", acc / 100., epoch)
+            writer.add_scalar("Train/Acc-top5", acc_top5 / 100., epoch)
+
         loss, acc, acc_top5 = valid(net, testloader, DEVICE, optimizer, criterion, 
                 epoch, args.report_every, LOGGER) 
         LOGGER.info("TEST epoch {} / {}: obj {:.3f}; Acc. Top-1 {:.3f}%; Top-5 {:.3f}%".format(
                 epoch, args.epochs, loss, acc, acc_top5))
+
+        if args.train_dir:
+            writer.add_scalar("Test/Loss", loss, epoch)
+            writer.add_scalar("Test/Acc", acc / 100., epoch)
+            writer.add_scalar("Test/Acc-top5", acc_top5 / 100., epoch)
 
         if epoch % args.save_every == 0 and args.train_dir:
             save_path = os.path.join(args.train_dir, "model_state_{}.ckpt".format(epoch))

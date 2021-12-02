@@ -38,10 +38,20 @@ class CrossEntropyMixupLoss(nn.Module):
         self.alpha = alpha
         self._criterion = nn.CrossEntropyLoss(**kwargs)
 
-    def forward(self, input: Tensor, target: Tensor) -> Tensor:
+    def forward(self, input: Tensor, target: Tensor, net: nn.Module) -> Tensor:
+        r"""
+        Args:
+            input (Tensor): Input examples.
+            target (Tensor): Label of the input examples.
+            net (nn.Module): Network to calculate the loss.
+
+        Returns:
+            loss (Tensor): The loss.
+        """
         mixed_input, mixed_target, _lambda = mix_data(input, target, self.alpha)
-        loss = _lambda * self._criterion(input, target) + \
-                (1 - _lambda) * self._criterion(mixed_input, mixed_target)
+        mixed_output = net(mixed_input)
+        loss = _lambda * self._criterion(mixed_output, target) + \
+                (1 - _lambda) * self._criterion(mixed_output, mixed_target)
         return loss
 
 

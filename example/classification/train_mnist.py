@@ -14,7 +14,7 @@ from torch.utils.tensorboard import SummaryWriter
 
 import extorch.vision.dataset as dataset
 import extorch.utils as utils
-from extorch.nn import CrossEntropyMixupLoss 
+from extorch.nn import CrossEntropyLabelSmooth
 
 from module import MNISTLeNet
 
@@ -117,7 +117,7 @@ def main():
     num_params = utils.get_params(net)
     LOGGER.info("Parameter size: {:.5f}M".format(num_params / 1.e6))
  
-    criterion = CrossEntropyMixupLoss(alpha = 1.)
+    criterion = CrossEntropyLabelSmooth(epsilon = 0.2)
 
     # Construct the optimizer
     optimizer = optim.SGD(list(net.parameters()), lr = args.lr, 
@@ -137,6 +137,7 @@ def main():
                 epoch, args.epochs, loss, acc, acc_top5))
 
         if args.train_dir:
+            writer.add_scalar("Learning Rate", optimizer.param_groups[0]["lr"], epoch)
             writer.add_scalar("Train/Loss", loss, epoch)
             writer.add_scalar("Train/Acc", acc / 100., epoch)
             writer.add_scalar("Train/Acc-top5", acc_top5 / 100., epoch)

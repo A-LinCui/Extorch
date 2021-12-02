@@ -132,13 +132,13 @@ def main():
 
     # Use the CIFAR-10 dataset in extorch with the default transformation
     datasets = dataset.CIFAR10(args.data_dir)
-    trainloader = data.DataLoader(dataset = datasets.splits()["train"], \
+    trainloader = data.DataLoader(dataset = datasets.splits["train"], \
             batch_size = args.batch_size, num_workers = args.num_workers, shuffle = True)
-    testloader = data.DataLoader(dataset = datasets.splits()["test"], \
+    testloader = data.DataLoader(dataset = datasets.splits["test"], \
             batch_size = args.batch_size, num_workers = args.num_workers, shuffle = False)
 
     # Construct the network
-    net = CIFARResNet18(num_classes = datasets.num_classes).to(DEVICE)
+    net = CIFARResNet18(num_classes = datasets.num_classes()).to(DEVICE)
     num_params = utils.get_params(net)
     LOGGER.info("Parameter size: {:.5f}M".format(num_params / 1.e6))
  
@@ -158,8 +158,8 @@ def main():
                              step_size = args.step_size,
                              rand_init = args.rand_init,
                              use_eval_mode = args.use_eval_mode,
-                             mean = dataset.cifar.CIFAR10_MEAN,
-                             std = dataset.cifar.CIFAR10_STD)
+                             mean = datasets.mean(),
+                             std = datasets.std())
 
     time_estimator = utils.TimeEstimator(args.epochs)
 

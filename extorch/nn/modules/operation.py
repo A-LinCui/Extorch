@@ -1,4 +1,4 @@
-from typing import Tuple, Union
+from typing import Tuple, Union, Optional
 
 import torch.nn.functional as F
 import torch.nn as nn
@@ -53,6 +53,45 @@ class ReLUBN(nn.Module):
 
     def forward(self, input: Tensor) -> Tensor:
         return self.bn(F.relu(input))
+
+
+class ConvReLU(nn.Module):
+    r"""
+    A convolution followed by a ReLU.
+
+    Args:
+        in_channels (int): Number of channels in the input image.
+        out_channels (int): Number of channels produced by the convolution.
+        kernel_size (int or tuple): Size of the convolving kernel.
+        stride (int or tuple, optional): Stride of the convolution. Default: 1.
+        padding (int, tuple or str, optional): Padding added to all four sides of e input. Default: 0.
+        dilation (int or tuple, optional): Spacing between kernel elements. Default: 1.
+        groups (Optional[int]): Number of blocked connections from input channels to output channels. Default: 1.
+        bias (Optional[bool]): If ``True``, adds a learnable bias to the output. Default: ``True``.
+        inplace (Optional[bool]): ReLU can optionally do the operation in-place. Default: ``False``.
+        kwargs: Other configurations of the convolution.
+
+    Examples::
+        >>> m = ConvReLU(3, 10, 3, 1)
+        >>> input = torch.randn(2, 3, 32, 32)
+        >>> output = m(input)
+    """
+    def __init__(self, in_channels: int, out_channels: int, 
+            kernel_size: Union[int, Tuple[int, int]], 
+            stride: Union[int, Tuple[int, int]] = 1,
+            padding: Union[str, int, Tuple[int, int]] = 0, 
+            dilation: Union[int, Tuple[int, int]] = 1,
+            groups: Optional[int] = 1, bias: Optional[bool] = True, 
+            inplace: Optional[bool] = False, **kwargs) -> None:
+        super(ConvReLU, self).__init__()
+        self.conv = nn.Conv2d(in_channels, out_channels, kernel_size, stride = stride, 
+                padding = padding, dilation = dilation, groups = groups, bias = bias, **kwargs)
+        self.relu = nn.ReLU(inplace = inplace)
+            
+    def forward(self, input: Tensor) -> Tensor:
+        output = self.conv(input)
+        output = self.relu(output)
+        return output
 
 
 class ConvBNReLU(nn.Module):

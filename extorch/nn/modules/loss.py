@@ -18,7 +18,7 @@ class HintonKDLoss(nn.KLDivLoss):
     r"""
     Knowledge distillation loss proposed by Hinton (`Link`_).
 
-    $L = (1 - \alpha) * L_{CE} (P_s, Y_{gt}) + \alpha * T^2 * L_{CE} (P_s, P_t)$
+    $L = (1 - \alpha) * L_{CE}(P_s, Y_{gt}) + \alpha * T^2 * L_{CE}(P_s, P_t)$
 
     Args:
         T (float): Temperature parameter (>= 1.) used to smooth the softmax output.

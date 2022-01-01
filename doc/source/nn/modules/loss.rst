@@ -9,6 +9,7 @@
    .. autosummary::
       :nosignatures:
 
+      HintonKDLoss
       CrossEntropyLabelSmooth
       CrossEntropyMixupLoss
       DECLoss

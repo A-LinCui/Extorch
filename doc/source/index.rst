@@ -17,6 +17,7 @@ The source code and some `minimal working examples <https://github.com/A-LinCui/
    vision/index
    utils/index
    nn/index
+   adversarial/index
 
 Indices and tables
 ==================

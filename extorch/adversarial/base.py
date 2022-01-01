@@ -56,4 +56,3 @@ class BaseAdversary(nn.Module):
         Returns:
             adv_examples (Tensor): The generated adversarial examples.
         """
-        pass

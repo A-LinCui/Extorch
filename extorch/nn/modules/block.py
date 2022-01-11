@@ -29,6 +29,7 @@ class ResNetBasicBlock(nn.Module):
         >>> output = m(input)
 
     .. _Link:
+        https://arxiv.org/abs/1512.03385
     """
     expansion = 1
 
@@ -67,7 +68,7 @@ class ResNetBottleneckBlock(nn.Module):
         >>> output = m(input)
 
     .. _Link:
-
+        https://arxiv.org/abs/1512.03385
     """
     expansion = 4
 

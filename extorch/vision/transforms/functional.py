@@ -1,4 +1,4 @@
-from typing import List
+from typing import List, Union, Tuple
 
 import numpy as np
 import torch
@@ -43,6 +43,28 @@ def cutout(image: Tensor, length: int, n_holes: int = 1) -> Tensor:
 
 
 def get_image_size(img: Tensor) -> List[int]:
-    # Returns (w, h) of tensor image
+    r"""
+    Calculate the width and height of the given tensor-like image.
+
+    Args:
+        img (Tensor): The image.
+
+    Returns:
+        width (int): Width of the image.
+        height (int): Height of the image.
+    """
     assert isinstance(img, Tensor), "img should be a Tensor."
-    return [img.shape[-1], img.shape[-2]]
+    width, height = img.shape[-1], img.shape[-2]
+    return width, height
+
+
+def _totuple(size: Union[int, Tuple[int, int]]) -> Tuple[int, int]:
+    r"""
+    Transform input size from int to tuple.
+
+    Args:
+        size (Union[int, Tuple[int, int]]): Size to be checked and transformed.
+    """
+    if isinstance(size, int):
+        size = (size, size)
+    return size

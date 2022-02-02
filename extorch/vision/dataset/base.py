@@ -55,8 +55,8 @@ class CVDataset(BaseDataset):
         super(CVDataset, self).__init__(data_dir)
         self.datasets = {}
         self.transforms = {
-            "train": train_transform,
-            "test": test_transform
+            "train": train_transform or self.default_transform["train"],
+            "test": test_transform or self.default_transform["test"]
         }
 
     @property
@@ -74,38 +74,6 @@ class CVDataset(BaseDataset):
     @property
     def splits(self) -> Dict[str, Dataset]:
         return self.datasets
-
-
-class CVClassificationDataset(CVDataset):
-    r"""
-    Base dataset for computer vision classification tasks.
-
-    Args:
-        data_dir (str): Base path of the data.
-        train_transform (Optional[transforms.Compose]): Data transform of the training split. Default: ``None``.
-        test_transform (Optional[transforms.Compose]): Data transform of the test split. Default: ``None``.
-        cutout_length (Optional[int]): The length (in pixels) of each square patch in Cutout.
-                                       If train transform is not specified and cutout_length is not None, 
-                                       we will add Cutout transform at the end. Default: ``None``.
-        cutout_n_holes (Optional[int]): Number of patches to cut out of each image. Default: 1.
-    """
-
-    def __init__(self, data_dir: str,
-                 train_transform: Optional[transforms.Compose] = None, 
-                 test_transform: Optional[transforms.Compose] = None,
-                 cutout_length: Optional[int] = None,
-                 cutout_n_holes: Optional[int] = 1) -> None:
-        
-        # If transform is not specified, use the default transform.
-        if train_transform is None:
-            train_transform = self.default_transform["train"]
-            if cutout_length:
-                train_transform.transforms.append(Cutout(cutout_length, cutout_n_holes))
-        
-        if test_transform is None:
-            test_transform = self.default_transform["test"]
-
-        super(CVClassificationDataset, self).__init__(data_dir, train_transform, test_transform)
 
     @abstractclassmethod
     def num_classes(cls) -> int:
@@ -138,3 +106,48 @@ class CVClassificationDataset(CVDataset):
         Returns:
             Dict(str: transforms.Compose): The default transforms.
         """
+
+
+class CVClassificationDataset(CVDataset):
+    r"""
+    Base dataset for computer vision classification tasks.
+
+    Args:
+        data_dir (str): Base path of the data.
+        train_transform (Optional[transforms.Compose]): Data transform of the training split. Default: ``None``.
+        test_transform (Optional[transforms.Compose]): Data transform of the test split. Default: ``None``.
+        cutout_length (Optional[int]): The length (in pixels) of each square patch in Cutout.
+                                       If train transform is not specified and cutout_length is not None, 
+                                       we will add Cutout transform at the end. Default: ``None``.
+        cutout_n_holes (Optional[int]): Number of patches to cut out of each image. Default: 1.
+    """
+
+    def __init__(self, data_dir: str,
+                 train_transform: Optional[transforms.Compose] = None, 
+                 test_transform: Optional[transforms.Compose] = None,
+                 cutout_length: Optional[int] = None,
+                 cutout_n_holes: Optional[int] = 1) -> None:
+        
+        # If transform is not specified, use the default transform.
+        if train_transform is None:
+            train_transform = self.default_transform["train"]
+            if cutout_length:
+                train_transform.transforms.append(Cutout(cutout_length, cutout_n_holes))
+
+        super(CVClassificationDataset, self).__init__(data_dir, train_transform, test_transform)
+
+
+class SegmentationDataset(CVDataset):
+    r"""
+    Base dataset for computer vision segmentation tasks.
+
+    Args:
+        data_dir (str): Base path of the data.
+        train_transform (Optional[transforms.Compose]): Data transform of the training split. Default: ``None``.
+        test_transform (Optional[transforms.Compose]): Data transform of the test split. Default: ``None``.
+    """
+
+    def __init__(self, data_dir: str, 
+                 train_transform: transforms.Compose,
+                 test_transform: transforms.Compose) -> None:
+        super(SegmentationDataset, self).__init__(data_dir, train_transform, test_transform)

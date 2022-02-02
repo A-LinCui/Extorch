@@ -1,5 +1,5 @@
 # base datasets
-from .base import BaseDataset, CVDataset, CVClassificationDataset
+from .base import BaseDataset, CVDataset, CVClassificationDataset, SegmentationDataset
 
 # computer vision datasets
 
@@ -14,5 +14,5 @@ from .svhn import SVHN
 
 from .tiny_imagenet import TinyImageNet
 
-# detection & segmentation
-from .PennFudan import PennFudan
+# segmentation
+from .voc import VOCSegmentationDataset

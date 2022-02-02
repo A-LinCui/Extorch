@@ -1,4 +1,2 @@
-from .functional import get_image_size
-from .transforms import *
-from .paired_transform import *
-from .dataset import *
+from extorch.vision import transforms
+from extorch.vision import dataset

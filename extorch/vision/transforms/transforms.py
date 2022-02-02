@@ -1,12 +1,11 @@
-from typing import Optional, Dict, Tuple, Union
+from typing import Tuple, Union
 
-import torch
 import torch.nn as nn
 from torch import Tensor
 from torchvision.transforms import functional as F
 from torchvision.transforms import transforms
 
-from . import functional as extF
+from .functional import _totuple, cutout
 
 
 class AdaptiveRandomCrop(nn.Module):
@@ -18,8 +17,7 @@ class AdaptiveRandomCrop(nn.Module):
     """
     def __init__(self, cropped_size: Union[int, Tuple[int, int]]) -> None:
         super(AdaptiveRandomCrop, self).__init__()
-        self.cropped_size = cropped_size if isinstance(cropped_size, tuple) \
-                else (cropped_size, cropped_size)
+        self.cropped_size = _totuple(cropped_size)
     
     def forward(self, img: Tensor) -> Tensor:
         r"""
@@ -45,8 +43,7 @@ class AdaptiveCenterCrop(nn.Module):
     """
     def __init__(self, cropped_size: Union[int, Tuple[int, int]]) -> None:
         super(AdaptiveCenterCrop, self).__init__()
-        self.cropped_size = cropped_size if isinstance(cropped_size, tuple) \
-                else (cropped_size, cropped_size)
+        self.cropped_size = _totuple(cropped_size)
     
     def forward(self, img: Tensor) -> Tensor:
         r"""
@@ -93,22 +90,4 @@ class Cutout(nn.Module):
         Returns:
             img (Tensor): Image with n_holes of dimension length x length cut out of it.
         """
-        return extF.cutout(img, self.length, self.n_holes)
-
-
-class DetectionCompose(transforms.Compose):
-    r"""
-    Tranform compose for detection.
-    """
-    def __call__(self, image, target):
-        for t in self.transforms:
-            image, target = t(image, target)
-        return image, target
-
-
-class DetectionToTensor(nn.Module):
-    def forward(self, image: Tensor, target: Optional[Dict[str, Tensor]] = None
-            ) -> Tuple[Tensor, Optional[Dict[str, Tensor]]]:
-        image = F.pil_to_tensor(image)
-        image = F.convert_image_dtype(image)
-        return image, target
+        return cutout(img, self.length, self.n_holes)

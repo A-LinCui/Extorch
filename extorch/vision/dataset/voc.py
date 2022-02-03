@@ -2,7 +2,6 @@ from typing import Optional, List, Dict
 
 import torch
 from torchvision.datasets import VOCSegmentation
-from torchvision import transforms
 
 from extorch.vision.dataset import SegmentationDataset
 from extorch.vision.transforms import segmentation as segT

@@ -2,10 +2,8 @@
 ======================
  
 .. toctree::
-   :maxdepth: 1
+   :maxdepth: 2
    :caption: User API
 
-   dataset
-   functional
-   transforms
-   paired_transform
+   dataset/index
+   transforms/index

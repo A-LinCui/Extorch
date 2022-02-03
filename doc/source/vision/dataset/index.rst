@@ -1,5 +1,5 @@
 :mod:`extorch.vision.dataset`
-======================
+===============================
 
 .. automodule:: extorch.vision.dataset
    :members:
@@ -12,18 +12,22 @@
       BaseDataset
       CVDataset
       CVClassificationDataset
+      SegmentationDataset
       CIFAR10
       CIFAR100
       MNIST
       FashionMNIST
       SVHN
-
+      TinyImageNet
+      VOCSegmentationDataset
 
 .. autoclass:: BaseDataset
 
 .. autoclass:: CVDataset
    
 .. autoclass:: CVClassificationDataset
+
+.. autoclass:: SegmentationDataset
    
 .. autoclass:: CIFAR10
    
@@ -34,3 +38,7 @@
 .. autoclass:: FashionMNIST
    
 .. autoclass:: SVHN
+
+.. autoclass:: TinyImageNet
+
+.. autoclass:: VOCSegmentationDataset

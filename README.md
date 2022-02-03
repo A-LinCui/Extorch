@@ -1,4 +1,4 @@
-![](https://img.shields.io/badge/version-1.0.3-yellow)
+![](https://img.shields.io/badge/version-1.0.4-yellow)
 ## Extorch: An useful extension library of PyTorch.
 
 [**Extorch**](https://github.com/A-LinCui/Extorch) is an extension library of [**PyTorch**](https://github.com/pytorch/pytorch) that lets you easily build deep learning systems with PyTorch. 

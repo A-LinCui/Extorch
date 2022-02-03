@@ -1,8 +1,9 @@
-from typing import List, Union, Tuple
+from typing import Union, Tuple
 
 import numpy as np
 import torch
 from torch import Tensor
+from torchvision.transforms import functional as F
 
 
 def cutout(image: Tensor, length: int, n_holes: int = 1) -> Tensor:
@@ -42,19 +43,22 @@ def cutout(image: Tensor, length: int, n_holes: int = 1) -> Tensor:
     return image
 
 
-def get_image_size(img: Tensor) -> List[int]:
+def _get_image_size(img: Tensor) -> Tuple[int]:
     r"""
-    Calculate the width and height of the given tensor-like image.
+    Returns the size of an image as [width, height].
 
     Args:
-        img (Tensor): The image.
+        img (PIL Image or Tensor): The image to be checked.
 
     Returns:
         width (int): Width of the image.
         height (int): Height of the image.
     """
-    assert isinstance(img, Tensor), "img should be a Tensor."
-    width, height = img.shape[-1], img.shape[-2]
+    try:
+        width, height = F._get_image_size(img)
+    except:
+        width, height = F.get_image_size(img)
+
     return width, height
 
 

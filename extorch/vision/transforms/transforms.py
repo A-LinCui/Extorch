@@ -8,6 +8,13 @@ from torchvision.transforms import transforms
 from .functional import _totuple, cutout
 
 
+__all__ = [
+    "AdaptiveRandomCrop",
+    "AdaptiveCenterCrop",
+    "Cutout"
+]
+
+
 class AdaptiveRandomCrop(nn.Module):
     r"""
     Adaptively randomly crop images with uncertain sizes for a certain size.

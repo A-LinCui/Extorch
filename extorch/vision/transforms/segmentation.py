@@ -7,7 +7,7 @@ import torch.nn as nn
 from torchvision import transforms as T
 from torchvision.transforms import functional as F
 
-from .functional import _totuple
+from .functional import _totuple, _get_image_size
 
 
 __all__ = [
@@ -105,7 +105,7 @@ class SegRandomCrop(nn.Module):
         self.size = _totuple(size)
 
     def forward(self, image, target):
-        width, height = F.get_image_size(image)
+        width, height = _get_image_size(image)
         
         if width < self.size[1]:
             padding = [self.size[1] - width, 0]

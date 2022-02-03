@@ -3,7 +3,6 @@ from typing import Optional, List, Dict
 import torch
 from torchvision.datasets import VOCSegmentation
 from torchvision import transforms
-from torchvision.transforms import functional as F
 
 from extorch.vision.dataset import SegmentationDataset
 from extorch.vision.transforms import segmentation as segT
@@ -17,14 +16,17 @@ class VOCSegmentationDataset(SegmentationDataset):
         
         self.datasets["train"] = VOCSegmentation(
                 root = self.data_dir, year = year, image_set = "train", download = True,
-                transform = self.transforms["train"])
+                transforms = self.transforms["train"])
         self.datasets["test"] = VOCSegmentation(
                 root = self.data_dir, year = year, image_set = "val", download = True,
                 transforms = self.transforms["test"])
 
     @classmethod
     def num_classes(cls) -> int:
-        return 21 # 20 classes and background
+        r"""
+        Number of classes excluding the background.
+        """
+        return 20
 
     @classmethod
     def mean(cls) -> List[float]:

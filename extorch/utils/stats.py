@@ -63,6 +63,40 @@ def accuracy(outputs: Tensor, targets: Tensor, topk: Tuple[int] = (1, )) -> List
         return res
 
 
+class SegConfusionMatrix(object):
+    r"""
+    Confusion matrix as well as metric calculation for image segmentation.
+
+    Args:
+        num_classes (int): The number of classes, including the background.
+    """
+    def __init__(self, num_classes: int) -> None:
+        self.num_classes = num_classes
+        self.mat = None
+
+    def update(self, output: Tensor, target: Tensor) -> None:
+        n = self.num_classes
+        output = output.argmax(1).flatten()
+        target = target.squeeze(0).to(torch.int64).flatten()
+       
+        k = (target >= 0) & (target < n)
+        inds = n * target[k].to(torch.int64) + output[k]
+
+        if self.mat is None:
+            self.mat = torch.zeros((n, n), dtype = torch.int64, device = output.device)
+        self.mat += torch.bincount(inds, minlength = n ** 2).reshape(n, n)
+
+    def reset(self) -> None:
+        self.mat.zero_()
+
+    def compute(self):
+        h = self.mat.float()
+        acc_global = torch.diag(h).sum() / h.sum()
+        acc = torch.diag(h) / h.sum(1)
+        iu = torch.diag(h) / (h.sum(1) + h.sum(0) - torch.diag(h))
+        return acc_global, acc, iu
+
+
 def get_params(model: nn.Module, only_trainable: bool = False) -> int:
     r"""
     Get the parameter number of the model.

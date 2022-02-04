@@ -1,5 +1,9 @@
+from typing import List, Union
+
 import numpy as np
 from sklearn.manifold import TSNE
+import torch
+from torch import Tensor
 
 
 def tsne_fit(feature: np.ndarray, n_components: int = 2, init: str = "pca", **kwargs):
@@ -32,3 +36,39 @@ def tsne_fit(feature: np.ndarray, n_components: int = 2, init: str = "pca", **kw
     model = TSNE(n_components = n_components, init = init, **kwargs)
     node_pos = model.fit_transform(feature)
     return node_pos
+
+
+def denormalize(
+    image: Tensor, 
+    mean: List[float], 
+    std: List[float], 
+    transpose: bool = False, 
+    detach_numpy: bool = False) -> Union[Tensor, np.ndarray]:
+    r"""
+    De-normalize the tensor-like image.
+
+    Args:
+        image (Tensor): The image to be de-normalized with shape [B, C, H, W] or [C, H, W].
+        mean (List[float]): Sequence of means for each channel while normalizing the origin image.
+        std (List[float]): Sequence of standard deviations for each channel while normalizing the origin image.
+        transpose (bool): Whether transpose the image to [H, W, C] or [H, W, C]. Default: `False`.
+        detach_numpy (bool): If true, return `Tensor.detach().cpu().numpy()`.
+
+    Returns:
+        image (Union[Tensor, np.ndarray]): The de-normalized image.
+
+    Examples:
+        >>> image = torch.randn((5, 3, 32, 32)).cuda()  # Shape: [5, 3, 32, 32] (cuda)
+        >>> mean = [0.5, 0.5, 0.5]
+        >>> std = [1., 1., 1.]
+        >>> de_image = denormalize(image, mean, std, True, True)  # Shape: [5, 32, 32, 3] (cpu)
+    """
+    device = image.device
+    mean = torch.reshape(torch.tensor(mean), (3, 1, 1)).to(device)
+    std = torch.reshape(torch.tensor(std), (3, 1, 1)).to(device)
+    image = image * std + mean
+    if transpose:
+        image = image.permute(0, 2, 3, 1) if len(image.shape) == 4 else image.permute(1, 2, 0)
+    if detach_numpy:
+        image = image.detach().cpu().numpy()
+    return image

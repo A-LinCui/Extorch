@@ -13,8 +13,14 @@ from extorch.adversarial.base import BaseAdversary
 
 
 __all__ = [
-        "GradientBasedAdversary", "PGDAdversary", "FGSMAdversary", 
-        "MDIFGSMAdversary", "MIFGSMAdversary", "IFGSMAdversary", "DiversityLayer"
+    "GradientBasedAdversary", 
+    "PGDAdversary", 
+    "CustomizedPGDAdversary",
+    "FGSMAdversary", 
+    "MDIFGSMAdversary", 
+    "MIFGSMAdversary", 
+    "IFGSMAdversary", 
+    "DiversityLayer"
 ]
 
 
@@ -89,6 +95,51 @@ class PGDAdversary(GradientBasedAdversary):
             input_adv.data = torch.clamp(input_clone + eta, 0., 1.)
 
         input_adv.data = (input_adv.data - self.mean) / self.std
+        return input_adv.data
+
+
+class CustomizedPGDAdversary(PGDAdversary):
+    r"""
+    Customized Project Gradient Descent (PGD, `Link`_) adversarial adversary.
+
+    .. _Link:
+        https://arxiv.org/abs/2109.01983
+    """
+    def generate_adv(self, net: nn.Module, input: Tensor, target: Tensor, output: Tensor, epsilon_c: float) -> Tensor:
+        r"""
+        Args:
+            epsilon_c (float): 
+        """
+        self.mean = self.mean.to(input.device)
+        self.std = self.std.to(input.device)
+
+        wrapper_net = WrapperModel(net, self.mean, self.std)
+
+        input_adv = Variable((input.data.clone() * self.std + self.mean), requires_grad = True)
+        input_clone = input_adv.data.clone()
+
+        if self.rand_init:
+            eta = input.new(input.size()).uniform_(-self.epsilon, self.epsilon)
+            input_adv.data = torch.clamp(input_adv.data + eta, 0., 1.)
+
+        for step in range(1, self.n_step + 1):
+            output = wrapper_net(input_adv)
+            loss = self.criterion(output, Variable(target))
+            loss.backward(retain_graph = True)
+
+            gradient = input_adv.grad
+            gradient_abs = torch.abs(gradient)
+            
+            g_1 = gradient / torch.sum(gradient_abs)
+            g_t = 2 / np.pi * torch.atan(gradient / torch.mean(gradient_abs))
+            g_ens = g_1 + self.gamma_1 * g_t + self.gamma_2 * gradient.sign()
+
+            eta = epsilon_c / step * g_ens
+            eta = torch.clamp(input_adv + eta - input_clone, -self.epsilon, self.epsilon)
+
+            input_adv = torch.clamp(input_clone + eta, 0., 1.)
+
+        input_adv = (input_adv - self.mean) / self.std
         return input_adv.data
 
 

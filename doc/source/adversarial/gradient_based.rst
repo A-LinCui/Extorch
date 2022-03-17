@@ -11,6 +11,7 @@
 
       GradientBasedAdversary
       PGDAdversary
+      CustomizedPGDAdversary
       FGSMAdversary
       MDIFGSMAdversary
       MIFGSMAdversary

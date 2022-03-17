@@ -51,7 +51,7 @@ def denormalize(
         image (Tensor): The image to be de-normalized with shape [B, C, H, W] or [C, H, W].
         mean (List[float]): Sequence of means for each channel while normalizing the origin image.
         std (List[float]): Sequence of standard deviations for each channel while normalizing the origin image.
-        transpose (bool): Whether transpose the image to [H, W, C] or [H, W, C]. Default: `False`.
+        transpose (bool): Whether transpose the image to [B, H, W, C] or [H, W, C]. Default: `False`.
         detach_numpy (bool): If true, return `Tensor.detach().cpu().numpy()`.
 
     Returns:

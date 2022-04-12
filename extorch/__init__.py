@@ -8,6 +8,6 @@ with open(os.path.join(PATH, "VERSION"), "r") as rf:
 # -------------------
 
 from . import vision
-from . import utils
 from . import nn
+from . import utils
 from . import adversarial

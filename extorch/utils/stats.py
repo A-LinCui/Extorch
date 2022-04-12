@@ -4,6 +4,9 @@ from collections import OrderedDict
 import torch
 import torch.nn as nn
 from torch import Tensor
+from thop import profile
+
+from extorch.nn.utils import net_device
 
 
 class OrderedStats(object):
@@ -105,3 +108,26 @@ def get_params(model: nn.Module, only_trainable: bool = False) -> int:
         only_trainable (bool): If only_trainable is true, only trainable parameters will be counted.
     """
     return sum(p.numel() for p in model.parameters() if p.requires_grad or not only_trainable)
+
+
+def cal_flops(model: nn.Module, inputs: Tensor) -> float:
+    r"""
+    Calculate FLOPs of the given model.
+
+    Args:
+        model (nn.Module): The model whose FLOPs is to be calculated.
+        inputs (Tensor): Example inputs to the model.
+
+    Returns:
+        flops (float): FLOPs of the model.
+
+    Examples::
+        >>> import torch
+        >>> from extorch.nn import AuxiliaryHead
+        >>> module = AuxiliaryHead(3, 10)
+        >>> input = torch.randn((10, 3, 32, 32))
+        >>> flops = cal_flops(module, input)  # 321098680.0
+    """
+    device = net_device(model)
+    flops, _ = profile(model, inputs = [inputs.to(device)], verbose = False)
+    return flops

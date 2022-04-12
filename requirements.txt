@@ -2,6 +2,7 @@ pyyaml
 ipdb
 numpy
 matplotlib
+thop
 pillow
 scikit-learn
 tensorboard

@@ -126,7 +126,7 @@ def cal_flops(model: nn.Module, inputs: Tensor) -> float:
         >>> from extorch.nn import AuxiliaryHead
         >>> module = AuxiliaryHead(3, 10)
         >>> input = torch.randn((10, 3, 32, 32))
-        >>> flops = cal_flops(module, input)  # 32.109868
+        >>> flops = cal_flops(module, input) / 1.e6 # 32.109868
     """
     device = net_device(model)
     flops, _ = profile(model, inputs = [inputs.to(device)], verbose = False)

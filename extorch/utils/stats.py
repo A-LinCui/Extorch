@@ -120,7 +120,7 @@ def cal_ssim(output: Tensor, target: Tensor) -> float:
 
     ssims = AverageMeter()
     for (out, label) in zip(output, target):
-        ssim = skimage.metrics.structural_similarity(out, label, data_range = 1., channel_axis = 1)
+        ssim = skimage.metrics.structural_similarity(out, label, data_range = 1., channel_axis = 0)
         ssims.update(ssim)
     return ssims.avg
 

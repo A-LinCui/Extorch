@@ -5,6 +5,7 @@ import torch
 import torch.nn as nn
 from torch import Tensor
 from thop import profile
+import skimage
 
 from extorch.nn.utils import net_device
 
@@ -64,6 +65,50 @@ def accuracy(outputs: Tensor, targets: Tensor, topk: Tuple[int] = (1, )) -> List
             correct_k = correct[:k].reshape(-1).float().sum(0)
             res.append(correct_k.mul_(100.0 / batch_size))
         return res
+    
+    
+def cal_psnr(output: Tensor, target: Tensor) -> float:
+    r"""
+    Calculate PSNR between images.
+    
+    Args:
+        output (Tensor): The batch of images with pixel values in [0, 1]. 
+                         Shape: [b, h, w].
+        target (Tensor): The batch of reference images with pixel values in [0, 1]. 
+                         Shape: [b, h, w].
+    Returns:
+        psnr (float): Average PSNR value.
+    """
+    output = 255. * output.unsqueeze(-1).detach().cpu().numpy()
+    target = 255. * target.unsqueeze(-1).detach().cpu().numpy()
+
+    psnrs = AverageMeter()
+    for (out, label) in zip(output, target):
+        psnr = skimage.metrics.peak_signal_noise_ratio(out, label, data_range = 255.)
+        psnrs.update(psnr)
+    return psnrs.avg
+
+
+def cal_ssim(output: Tensor, target: Tensor) -> float:
+    r"""
+    Calculate SSIM between images.
+    
+    Args:
+        output (Tensor): The batch of images with pixel values in [0, 1]. 
+                         Shape: [b, h, w].
+        target (Tensor): The batch of reference images with pixel values in [0, 1]. 
+                         Shape: [b, h, w].
+    Returns:
+        ssim (float): Average SSIM value.
+    """
+    output = 255. * output.unsqueeze(-1).detach().cpu().numpy()
+    target = 255. * target.unsqueeze(-1).detach().cpu().numpy()
+
+    ssims = AverageMeter()
+    for (out, label) in zip(output, target):
+        ssim = skimage.metrics.structural_similarity(out, label, data_range = 255., multichannel = True)
+        ssims.update(ssim)
+    return ssims.avg
 
 
 class SegConfusionMatrix(object):

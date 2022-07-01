@@ -73,18 +73,25 @@ def cal_psnr(output: Tensor, target: Tensor) -> float:
     
     Args:
         output (Tensor): The batch of images with pixel values in [0, 1]. 
-                         Shape: [b, h, w].
+                         Shape: [b, h, w] or [b, c, h, w].
         target (Tensor): The batch of reference images with pixel values in [0, 1]. 
-                         Shape: [b, h, w].
+                         Shape: [b, h, w] or [b, c, h, w].
     Returns:
         psnr (float): Average PSNR value.
     """
-    output = 255. * output.unsqueeze(-1).detach().cpu().numpy()
-    target = 255. * target.unsqueeze(-1).detach().cpu().numpy()
+    assert output.shape == target.shape
+
+    is_gray = len(output.shape) == 3
+    if is_gray:
+        output = output.unsqueeze(1)
+        target = target.unsqueeze(1)
+
+    output = output.detach().cpu().numpy()
+    target = target.detach().cpu().numpy()
 
     psnrs = AverageMeter()
     for (out, label) in zip(output, target):
-        psnr = skimage.metrics.peak_signal_noise_ratio(out, label, data_range = 255.)
+        psnr = skimage.metrics.peak_signal_noise_ratio(out, label, data_range = 1.)
         psnrs.update(psnr)
     return psnrs.avg
 
@@ -95,18 +102,25 @@ def cal_ssim(output: Tensor, target: Tensor) -> float:
     
     Args:
         output (Tensor): The batch of images with pixel values in [0, 1]. 
-                         Shape: [b, h, w].
+                         Shape: [b, h, w] or [b, c, h, w].
         target (Tensor): The batch of reference images with pixel values in [0, 1]. 
-                         Shape: [b, h, w].
+                         Shape: [b, h, w] or [b, c, h, w].
     Returns:
         ssim (float): Average SSIM value.
     """
-    output = 255. * output.unsqueeze(-1).detach().cpu().numpy()
-    target = 255. * target.unsqueeze(-1).detach().cpu().numpy()
+    assert output.shape == target.shape
+
+    is_gray = len(output.shape) == 3
+    if is_gray:
+        output = output.unsqueeze(1)
+        target = target.unsqueeze(1)
+
+    output = output.detach().cpu().numpy()
+    target = target.detach().cpu().numpy()
 
     ssims = AverageMeter()
     for (out, label) in zip(output, target):
-        ssim = skimage.metrics.structural_similarity(out, label, data_range = 255., multichannel = True)
+        ssim = skimage.metrics.structural_similarity(out, label, data_range = 1., channel_axis = 1)
         ssims.update(ssim)
     return ssims.avg
 

@@ -167,7 +167,7 @@ class MAMLLoss(nn.Module):
 
     Examples::
         >>> criterion = MAMLLoss(nn.CrossEntropyLoss(), 0.05, True)
-        >>> loss = criterion([task_1_img, task_2_img], [task_1_img, task_2_img], net)
+        >>> loss = criterion([task_1_img, task_2_img], [task_1_label, task_2_label], net)
 
     .. _Link:
         https://arxiv.org/abs/1703.03400

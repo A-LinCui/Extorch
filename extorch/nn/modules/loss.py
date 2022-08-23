@@ -1,16 +1,21 @@
+from typing import List
+from collections import OrderedDict
+
 import torch
 import torch.nn as nn
 from torch import Tensor
 
 from extorch.utils import expect
 from extorch.nn.functional import dec_soft_assignment, mix_data
+from extorch.nn.utils import use_params
 
 
 __all__ = [
         "HintonKDLoss",
         "CrossEntropyLabelSmooth",
         "CrossEntropyMixupLoss",
-        "DECLoss"
+        "DECLoss",
+        "MAMLLoss"
 ]
 
 
@@ -149,3 +154,52 @@ class DECLoss(nn.Module):
     def target_distribution(input: Tensor) -> Tensor:
         weight = (input ** 2) / torch.sum(input, 0)
         return (weight.t() / torch.sum(weight, 1)).t()
+
+
+class MAMLLoss(nn.Module):
+    r"""
+    Model-Agnostic Meta-Learning (MAML, `Link`_).
+
+    Args:
+        criterion (nn.Module): Inner criterion.
+        update_lr (float): Step size for the inner loop update.
+        second_order (bool): Default: `True`.
+
+    Examples::
+        >>> criterion = MAMLLoss(nn.CrossEntropyLoss(), 0.05, True)
+        >>> loss = criterion([task_1_img, task_2_img], [task_1_img, task_2_img], net)
+
+    .. _Link:
+        https://arxiv.org/abs/1703.03400
+    """
+    def __init__(self, criterion: nn.Module, update_lr: float, second_order: bool = True) -> None:
+        super(MAMLLoss, self).__init__()
+        self.criterion = criterion
+        self.update_lr = update_lr
+        self.second_order = second_order
+
+    def forward(self, input: List[Tensor], target: List[Tensor], net: nn.Module) -> Tensor:
+        loss_lst = []
+
+        for (_input, _target) in zip(input, target):
+            output = net(_input)
+            loss = self.criterion(output, _target)
+            grad = torch.autograd.grad(
+                loss, net.parameters(), 
+                retain_graph = self.second_order, 
+                create_graph = self.second_order
+            )
+
+            fast_weights = OrderedDict(net.named_parameters())
+            fast_weights = OrderedDict(
+                (name, param - self.update_lr * g)
+                for ((name, param), g) in zip(fast_weights.items(), grad)
+            )
+            
+            with use_params(net, fast_weights):
+                output = net(_input)
+                loss_q = self.criterion(output, _target)
+
+            loss_lst.append(loss_q)
+
+        return sum(loss_lst) / len(loss_lst)

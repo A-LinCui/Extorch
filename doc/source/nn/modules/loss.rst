@@ -13,3 +13,4 @@
       CrossEntropyLabelSmooth
       CrossEntropyMixupLoss
       DECLoss
+      MAMLLoss

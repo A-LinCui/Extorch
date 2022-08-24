@@ -1,6 +1,7 @@
 from typing import List
 from collections import OrderedDict
 
+import numpy as np
 import torch
 import torch.nn as nn
 from torch import Tensor
@@ -15,6 +16,7 @@ __all__ = [
         "CrossEntropyLabelSmooth",
         "CrossEntropyMixupLoss",
         "DECLoss",
+        "PSNRLoss",
         "MAMLLoss"
 ]
 
@@ -154,6 +156,29 @@ class DECLoss(nn.Module):
     def target_distribution(input: Tensor) -> Tensor:
         weight = (input ** 2) / torch.sum(input, 0)
         return (weight.t() / torch.sum(weight, 1)).t()
+
+
+class PSNRLoss(nn.Module):
+    r"""
+    PSNR Loss.
+    """
+    def __init__(self):
+        super(PSNRLoss, self).__init__()
+        self.scale = 10 / np.log(10)
+
+    def forward(self, input: Tensor, target: Tensor) -> Tensor:
+        r"""
+        Args:
+            input (Tensor): Output of the network with pixel values in [0, 1]. 
+                            Shape: [B, C, H, W].
+            target (Tensor): Ground-truth with pixel values in [0, 1]. 
+                            Shape: [B, C, H, W].
+
+        Returns:
+            loss (Tensor): The PSNR loss.
+        """
+        loss = self.scale * torch.log(((input - target) ** 2).mean(dim = (1, 2, 3)) + 1e-8).mean()
+        return loss
 
 
 class MAMLLoss(nn.Module):

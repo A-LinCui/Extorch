@@ -6,9 +6,22 @@ from extorch.nn.modules.operation import ConvBNReLU, Identity, ConvBN
 
 
 __all__ = [
+        "SimpleGate",
         "ResNetBasicBlock",
         "ResNetBottleneckBlock"
 ]
+
+
+class SimpleGate(nn.Module):
+    r"""
+    Simple gate proposed in Simple Baselines for Image Restoration (`Link`_).
+
+    .. _Link:
+        https://arxiv.org/abs/2204.0467
+    """
+    def forward(self, x: Tensor) -> Tensor:
+        x1, x2 = x.chunk(2, dim = 1)
+        return x1 * x2
 
 
 class ResNetBasicBlock(nn.Module):
